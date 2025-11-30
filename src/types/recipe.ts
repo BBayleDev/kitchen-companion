@@ -13,3 +13,17 @@ export interface Recipe {
 }
 
 export type RecipeInput = Omit<Recipe, 'id' | 'createdAt' | 'updatedAt'>;
+
+export interface MadeEntry {
+  id: string;
+  recipeId: string;
+  totalCost?: number;
+  actualCookTime?: number;
+  numberOfParts?: number;
+  grade: number; // 1-5 rating
+  comment?: string;
+  createdAt: Date;
+  synced: boolean;
+}
+
+export type MadeEntryInput = Omit<MadeEntry, 'id' | 'createdAt' | 'synced'>;
