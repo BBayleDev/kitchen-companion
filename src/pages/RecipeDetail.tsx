@@ -1,9 +1,10 @@
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useRecipes } from '@/hooks/useRecipes';
+import { useMadeEntries } from '@/hooks/useMadeEntries';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Clock, Users, Pencil, Trash2 } from 'lucide-react';
+import { ArrowLeft, Clock, Users, Pencil, Trash2, Star } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,13 +17,18 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from 'sonner';
+import { MadeRecipeSheet } from '@/components/MadeRecipeSheet';
+import { MadeEntryInput } from '@/types/recipe';
 
 const RecipeDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { getRecipe, deleteRecipe } = useRecipes();
+  const { addMadeEntry, getEntriesForRecipe, getAverageGrade } = useMadeEntries();
 
   const recipe = id ? getRecipe(id) : null;
+  const madeEntries = id ? getEntriesForRecipe(id) : [];
+  const averageGrade = id ? getAverageGrade(id) : null;
 
   if (!recipe) {
     return (
@@ -44,6 +50,10 @@ const RecipeDetail = () => {
     deleteRecipe(recipe.id);
     toast.success('Recipe deleted successfully');
     navigate('/');
+  };
+
+  const handleMadeSubmit = (entry: MadeEntryInput) => {
+    addMadeEntry(entry);
   };
 
   return (
@@ -115,7 +125,7 @@ const RecipeDetail = () => {
           </div>
           <p className="text-lg text-muted-foreground mb-6">{recipe.description}</p>
           
-          <div className="flex flex-wrap gap-6 text-foreground">
+          <div className="flex flex-wrap items-center gap-6 text-foreground mb-6">
             <div className="flex items-center gap-2">
               <Clock className="w-5 h-5 text-primary" />
               <span className="font-medium">{recipe.cookTime} minutes</span>
@@ -124,7 +134,19 @@ const RecipeDetail = () => {
               <Users className="w-5 h-5 text-primary" />
               <span className="font-medium">{recipe.servings} servings</span>
             </div>
+            {averageGrade !== null && (
+              <div className="flex items-center gap-2">
+                <Star className="w-5 h-5 text-primary fill-primary" />
+                <span className="font-medium">{averageGrade.toFixed(1)} ({madeEntries.length})</span>
+              </div>
+            )}
           </div>
+
+          <MadeRecipeSheet 
+            recipeId={recipe.id}
+            recipeTitle={recipe.title}
+            onSubmit={handleMadeSubmit}
+          />
         </div>
 
         <div className="grid md:grid-cols-2 gap-6 mb-8">
