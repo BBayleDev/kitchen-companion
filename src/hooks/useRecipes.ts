@@ -30,7 +30,8 @@ const SAMPLE_RECIPES: Recipe[] = [
       'Top with fresh basil leaves before serving'
     ],
     createdAt: new Date('2024-01-15'),
-    updatedAt: new Date('2024-01-15')
+    updatedAt: new Date('2024-01-15'),
+    synced: true
   },
   {
     id: '2',
@@ -59,7 +60,8 @@ const SAMPLE_RECIPES: Recipe[] = [
       'Garnish with parsley and serve hot'
     ],
     createdAt: new Date('2024-01-16'),
-    updatedAt: new Date('2024-01-16')
+    updatedAt: new Date('2024-01-16'),
+    synced: true
   },
   {
     id: '3',
@@ -86,7 +88,8 @@ const SAMPLE_RECIPES: Recipe[] = [
       'Toss gently and serve immediately'
     ],
     createdAt: new Date('2024-01-17'),
-    updatedAt: new Date('2024-01-17')
+    updatedAt: new Date('2024-01-17'),
+    synced: true
   }
 ];
 
@@ -107,11 +110,31 @@ export const useRecipes = () => {
       }));
       setRecipes(recipesWithDates);
     } else {
-      // First time - load sample recipes
-      setRecipes(SAMPLE_RECIPES);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(SAMPLE_RECIPES));
+      // First time - load sample recipes with synced flag
+      const recipesWithSync = SAMPLE_RECIPES.map(r => ({ ...r, synced: true }));
+      setRecipes(recipesWithSync);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(recipesWithSync));
     }
     setLoading(false);
+  }, []);
+
+  // Listen for storage events to refresh data when synced
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        const recipesWithDates = parsed.map((recipe: any) => ({
+          ...recipe,
+          createdAt: new Date(recipe.createdAt),
+          updatedAt: new Date(recipe.updatedAt)
+        }));
+        setRecipes(recipesWithDates);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   // Save to localStorage whenever recipes change
@@ -125,7 +148,8 @@ export const useRecipes = () => {
       ...recipeInput,
       id: Date.now().toString(),
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
+      synced: false
     };
     saveRecipes([newRecipe, ...recipes]);
     return newRecipe;
@@ -134,7 +158,7 @@ export const useRecipes = () => {
   const updateRecipe = (id: string, recipeInput: RecipeInput) => {
     const updatedRecipes = recipes.map(recipe =>
       recipe.id === id
-        ? { ...recipeInput, id, createdAt: recipe.createdAt, updatedAt: new Date() }
+        ? { ...recipeInput, id, createdAt: recipe.createdAt, updatedAt: new Date(), synced: false }
         : recipe
     );
     saveRecipes(updatedRecipes);

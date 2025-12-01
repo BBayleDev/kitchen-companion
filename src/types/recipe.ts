@@ -10,9 +10,10 @@ export interface Recipe {
   instructions: string[];
   createdAt: Date;
   updatedAt: Date;
+  synced: boolean;
 }
 
-export type RecipeInput = Omit<Recipe, 'id' | 'createdAt' | 'updatedAt'>;
+export type RecipeInput = Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'synced'>;
 
 export interface MadeEntry {
   id: string;

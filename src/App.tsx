@@ -7,8 +7,28 @@ import Home from "./pages/Home";
 import RecipeDetail from "./pages/RecipeDetail";
 import RecipeForm from "./pages/RecipeForm";
 import NotFound from "./pages/NotFound";
+import { SyncIndicator } from "./components/SyncIndicator";
+import { useSyncManager } from "./hooks/useSyncManager";
 
 const queryClient = new QueryClient();
+
+const AppContent = () => {
+  useSyncManager();
+  
+  return (
+    <>
+      <SyncIndicator />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/recipe/:id" element={<RecipeDetail />} />
+        <Route path="/recipe/:id/edit" element={<RecipeForm />} />
+        <Route path="/add" element={<RecipeForm />} />
+        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </>
+  );
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -16,13 +36,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/recipe/:id" element={<RecipeDetail />} />
-          <Route path="/recipe/:id/edit" element={<RecipeForm />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AppContent />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
