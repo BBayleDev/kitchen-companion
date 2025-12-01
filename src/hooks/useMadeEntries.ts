@@ -35,22 +35,7 @@ export const useMadeEntries = () => {
       synced: false
     };
     saveEntries([newEntry, ...entries]);
-    
-    // Simulate API sync when online
-    if (navigator.onLine) {
-      setTimeout(() => {
-        syncEntry(newEntry.id);
-      }, 1000);
-    }
-    
     return newEntry;
-  };
-
-  const syncEntry = (id: string) => {
-    const updatedEntries = entries.map(entry =>
-      entry.id === id ? { ...entry, synced: true } : entry
-    );
-    saveEntries(updatedEntries);
   };
 
   const getEntriesForRecipe = (recipeId: string) => {
@@ -63,6 +48,24 @@ export const useMadeEntries = () => {
     const sum = recipeEntries.reduce((acc, entry) => acc + entry.grade, 0);
     return sum / recipeEntries.length;
   };
+
+  // Listen for storage events to refresh data when synced
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        const entriesWithDates = parsed.map((entry: any) => ({
+          ...entry,
+          createdAt: new Date(entry.createdAt)
+        }));
+        setEntries(entriesWithDates);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   return {
     entries,
